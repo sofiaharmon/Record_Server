@@ -3,10 +3,10 @@ const { model, Schema } = require('mongoose');
 const recordSchema = new Schema({
     title: String,
     artist: String,
-    barcode: String,
     seller: String,
-    price: double,
-    quantity: int
+    price: Number,
+    quantity: Number,
+    img: String
 })
 
 module.exports = model('Record', recordSchema);
