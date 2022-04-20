@@ -28,3 +28,33 @@ module.exports.registerValidator = (
         valid: Object.keys(errors).length < 1
     }
 }
+
+module.exports.addDistValidator = (
+    name,
+    phone,
+    email
+) => {
+    const errors = {};
+    if (name.trim() === '') {
+        errors.name = 'Username cannot be empty';
+    }
+    if (email.trim() === '') {
+        errors.email = 'Email cannot be empty';
+    } else {
+        if (!email.match(/^([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/)) {
+            errors.email = "Please enter a valid email address";
+        }
+    }
+    if (phone.trim() === '') {
+        errors.phone = 'Phone number cannot be empty'
+    } else {
+        if (!phone.match(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/)) {
+            errors.phone = 'Please enter a valid phone number';
+        }
+    }
+
+    return {
+        errors,
+        valid: Object.keys(errors).length < 1
+    }
+}

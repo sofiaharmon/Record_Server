@@ -10,29 +10,51 @@ module.exports = {
     Query: {
         async getUsers() {
             try {
-                const posts = await User.find().sort({ createdAt: -1 });
-                return posts;
+                const users = await User.find().sort({ createdAt: -1 });
+                return users;
             } catch (fetchErr) {
                 throw new Error(fetchErr);
             }
         }
     },
     Mutation: {
-        // async login(
-        //     _,
-        //     {  username, password }
-        // ) {
-        //     const userinDB = await User.findOne({ username });
-        // },
+        async login(
+            _,
+            {  username, password }
+        ) {
+            const userinDB = await User.findOne({ username });
+
+            if (!userinDB) {
+                throw new UserInputError("User not found", { err: "Username not found."});
+            }
+
+            const bcryptCompRes = await bcrypt.compare(password, userinDB.password);
+
+            if (!bcryptCompRes) {
+                throw new UserInputError("Incorrect password", { err: "Incorrect login info."});
+            }
+
+            const token = jwt.sign({
+                id: userinDB.id,
+                email: userinDB.email,
+                username: userinDB.username
+            }, SECRET_KEY, { expiresIn: '3h' });
+
+            return {
+                ...userinDB._doc,
+                id: userinDB._id,
+                token
+            }
+        },
         async deleteUser(
             _,
-            { userID }
+            { username }
         ) {
             try {
-                const user = await User.findOne({ username: userID });
+                const user = await User.findOne({ username });
                 if (user) {
                     await user.delete();
-                    return "deleted user";
+                    return username;
                 }
                 else {
                     return 'didnt del'
@@ -76,16 +98,9 @@ module.exports = {
 
             const res = await newUser.save();
 
-            const token = jwt.sign({
-                id: res.id,
-                email: res.email,
-                username: res.username
-            }, SECRET_KEY, { expiresIn: '1h' });
-
             return {
                 ...res._doc,
                 id: res._id,
-                token
             }
         }
     }
